@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -22,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { MapPin } from "lucide-react";
 
 // Mock property listings data
 const mockListings = [
@@ -176,6 +176,7 @@ const SearchPage = () => {
   const [selectedDistrict, setSelectedDistrict] = useState<string>("");
   const [properties, setProperties] = useState<Property[]>(mockListings);
   const [likedProperties, setLikedProperties] = useState<Set<string>>(new Set());
+  const [showMap, setShowMap] = useState<boolean>(true);
   
   // Filter properties based on deal type and location
   const filteredProperties = dealType
@@ -267,7 +268,47 @@ const SearchPage = () => {
               </div>
             </div>
           </CardContent>
+
+          <CardFooter>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setShowMap(prev => !prev)}
+            >
+              <MapPin className="h-4 w-4" />
+              {showMap ? "지도 숨기기" : "지도 보기"}
+            </Button>
+          </CardFooter>
         </Card>
+
+        {/* Map View */}
+        {showMap && (
+          <Card className="mb-8 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative">
+                <img 
+                  src="https://i.imgur.com/vD3pEtz.jpg" 
+                  alt="부동산 지도 예시" 
+                  className="w-full h-[400px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex flex-col justify-end p-6">
+                  <h3 className="text-white text-xl font-bold mb-2">지역별 매물 분���도</h3>
+                  <p className="text-white/90 mb-4">
+                    {selectedCity || "전체"} 
+                    {selectedDistrict ? ` ${selectedDistrict}` : ""} 
+                    지역의 {dealType} 매물 현황입니다
+                  </p>
+                  <div className="flex gap-2">
+                    <Badge className="bg-realestate-primary">총 {filteredProperties.length}개 매물</Badge>
+                    <Badge variant="outline" className="bg-white/20 text-white border-white/30">
+                      평균가 {dealType === "매매" ? "9억 8천만원" : "2억 5천만원"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Additional Information Card */}
         <Card className="mb-8 bg-blue-50 border-blue-100">
