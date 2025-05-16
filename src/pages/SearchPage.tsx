@@ -22,6 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { MapPin } from "lucide-react";
+import MapView from "@/components/property/MapView";
+import PropertyCard from "@/components/property/PropertyCard";
 
 // Mock property listings data
 const mockListings = [
@@ -133,7 +135,7 @@ const mockListings = [
 // Mock city and district data
 const mockCities = ["서울특별시", "경기도", "인천광역시", "부산광역시", "대구광역시", "광주광역시", "대전광역시", "울산광역시"];
 const mockDistricts: Record<string, string[]> = {
-  "서울특별시": ["강남구", "서초구", "송파구", "강동구", "마포구", "용산구", "종로구", "중구", "성동구", "광진구", "동대문구", "성북구", "강북구", "도봉구", "노원구", "중랑구", "서대문구", "은평구", "강서구", "양천구", "구로구", "금천구", "영등포구", "동작구", "관악구"],
+  "서울특별시": ["강남구", "서초구", "송파구", "강동구", "마포구", "용산구", "종로구", "중구", "성동구", "광진구", "동대문구", "성북구", "강북구", "도봉구", "노원구", "중랑구", "서대문구", "���평구", "강서구", "양천구", "구로구", "금천구", "영등포구", "동작구", "관악구"],
   "경기도": ["수원시", "성남시", "안양시", "안산시", "용인시", "부천시", "광명시", "평택시", "과천시", "오산시", "시흥시", "군포시", "의왕시", "하남시", "이천시", "안성시", "김포시", "화성시", "광주시", "여주시", "양평군", "고양시", "의정부시", "동두천시", "구리시", "남양주시", "파주시", "양주시", "포천시", "연천군", "가평군"],
   "인천광역시": ["중구", "동구", "남구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
   "부산광역시": ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
@@ -177,6 +179,7 @@ const SearchPage = () => {
   const [properties, setProperties] = useState<Property[]>(mockListings);
   const [likedProperties, setLikedProperties] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState<boolean>(true);
+  const [mapViewMode, setMapViewMode] = useState<"split" | "fullscreen">("split");
   
   // Filter properties based on deal type and location
   const filteredProperties = dealType
@@ -203,6 +206,10 @@ const SearchPage = () => {
       }
       return newLiked;
     });
+  };
+
+  const toggleMapViewMode = () => {
+    setMapViewMode(prev => prev === "split" ? "fullscreen" : "split");
   };
 
   return (
@@ -269,7 +276,7 @@ const SearchPage = () => {
             </div>
           </CardContent>
 
-          <CardFooter>
+          <CardFooter className="flex justify-between">
             <Button 
               variant="outline" 
               className="flex items-center gap-2"
@@ -278,220 +285,97 @@ const SearchPage = () => {
               <MapPin className="h-4 w-4" />
               {showMap ? "지도 숨기기" : "지도 보기"}
             </Button>
+            
+            {showMap && (
+              <Button 
+                variant="outline"
+                onClick={toggleMapViewMode}
+              >
+                {mapViewMode === "split" ? "지도 확대" : "지도 축소"}
+              </Button>
+            )}
           </CardFooter>
         </Card>
 
-        {/* Map View */}
+        {/* Google Maps Integration */}
         {showMap && (
-          <Card className="mb-8 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="relative">
-                <img 
-                  src="https://i.imgur.com/vD3pEtz.jpg" 
-                  alt="부동산 지도 예시" 
-                  className="w-full h-[400px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex flex-col justify-end p-6">
-                  <h3 className="text-white text-xl font-bold mb-2">지역별 매물 분���도</h3>
-                  <p className="text-white/90 mb-4">
-                    {selectedCity || "전체"} 
-                    {selectedDistrict ? ` ${selectedDistrict}` : ""} 
-                    지역의 {dealType} 매물 현황입니다
-                  </p>
-                  <div className="flex gap-2">
-                    <Badge className="bg-realestate-primary">총 {filteredProperties.length}개 매물</Badge>
-                    <Badge variant="outline" className="bg-white/20 text-white border-white/30">
-                      평균가 {dealType === "매매" ? "9억 8천만원" : "2억 5천만원"}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className={`mb-8 ${mapViewMode === "fullscreen" ? "h-[800px]" : "h-[600px]"}`}>
+            <MapView 
+              properties={filteredProperties} 
+              selectedCity={selectedCity} 
+              selectedDistrict={selectedDistrict}
+              dealType={dealType}
+            />
+          </div>
         )}
 
         {/* Additional Information Card */}
-        <Card className="mb-8 bg-blue-50 border-blue-100">
-          <CardContent className="pt-6">
-            {dealType === "매매" ? (
-              <div className="flex items-center">
-                <div className="bg-blue-100 rounded-full p-3 mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
+        {(mapViewMode !== "fullscreen" || !showMap) && (
+          <Card className="mb-8 bg-blue-50 border-blue-100">
+            <CardContent className="pt-6">
+              {dealType === "매매" ? (
+                <div className="flex items-center">
+                  <div className="bg-blue-100 rounded-full p-3 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-blue-800">미래 실거래가 예측 정보</h3>
+                    <p className="text-blue-600 text-sm">각 매물에 대한 예상 실거래가를 확인하실 수 있습니다.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium text-blue-800">미래 실거래가 예측 정보</h3>
-                  <p className="text-blue-600 text-sm">각 매물에 대한 예상 실거래가를 확인하실 수 있습니다.</p>
+              ) : (
+                <div className="flex items-center">
+                  <div className="bg-red-100 rounded-full p-3 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-red-800">전세사기 위험도 정보</h3>
+                    <p className="text-red-600 text-sm">각 매물에 대한 전세사기 위험도를 확인하실 수 있습니다. (0: 안전, 3: 매우 위험)</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <div className="bg-red-100 rounded-full p-3 mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium text-red-800">전세사기 위험도 정보</h3>
-                  <p className="text-red-600 text-sm">각 매물에 대한 전세사기 위험도를 확인하실 수 있습니다. (0: 안전, 3: 매우 위험)</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        )}
         
         {/* Property Listings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {filteredProperties.length > 0 ? (
-            filteredProperties.map(property => (
-              <Card key={property.id} className="overflow-hidden card-hover">
-                <div className="relative h-48">
-                  <img
-                    src={property.thumbnail}
-                    alt={property.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={() => handleToggleLike(property.id)}
-                    className={`absolute top-2 right-2 p-2 rounded-full ${
-                      likedProperties.has(property.id) 
-                        ? "bg-realestate-highlight text-white" 
-                        : "bg-white text-gray-400 hover:bg-gray-100"
-                    }`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill={likedProperties.has(property.id) ? "currentColor" : "none"}
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </button>
-                  <Badge className="absolute bottom-2 left-2 bg-white text-gray-700">
-                    찜 {property.likes + (likedProperties.has(property.id) ? 1 : 0)}
-                  </Badge>
-                </div>
-                
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg truncate">{property.title}</CardTitle>
-                      <CardDescription className="truncate">{property.address}</CardDescription>
-                    </div>
-                    <Badge>{property.dealType}</Badge>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">가격</span>
-                      <span className="font-semibold">
-                        {property.dealType === "월세" 
-                          ? `${formatPrice(property.deposit || 0)} / ${formatPrice(property.monthlyRent || 0)}`
-                          : formatPrice(property.price || 0)}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">면적</span>
-                      <span>{property.area}m² ({Math.floor(property.area / 3.305)}평)</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">구조</span>
-                      <span>{property.rooms}룸 / {property.baths}욕실</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">층수</span>
-                      <span>{property.floor}층 / 총 {property.totalFloors}층</span>
-                    </div>
-                    
-                    {/* Show prediction or risk based on deal type */}
-                    {property.dealType === "매매" && property.predictedPrice && (
-                      <div className="mt-4 p-2 bg-blue-50 rounded-md">
-                        <div className="flex justify-between">
-                          <span className="text-blue-800">예상 미래 시세</span>
-                          <span className="font-semibold text-blue-800">{formatPrice(property.predictedPrice)}</span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {(property.dealType === "전세" || property.dealType === "월세") && property.fraudRisk !== null && (
-                      <div className={`mt-4 p-2 rounded-md ${
-                        property.fraudRisk === 0 ? "bg-green-50" :
-                        property.fraudRisk === 1 ? "bg-yellow-50" :
-                        property.fraudRisk === 2 ? "bg-orange-50" : "bg-red-50"
-                      }`}>
-                        <div className="flex justify-between">
-                          <span className={`${
-                            property.fraudRisk === 0 ? "text-green-800" :
-                            property.fraudRisk === 1 ? "text-yellow-800" :
-                            property.fraudRisk === 2 ? "text-orange-800" : "text-red-800"
-                          }`}>
-                            전세사기 위험도
-                          </span>
-                          <div className="flex">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                              <svg
-                                key={i}
-                                xmlns="http://www.w3.org/2000/svg"
-                                className={`h-5 w-5 ${
-                                  i < (property.fraudRisk || 0) 
-                                    ? property.fraudRisk === 0 ? "text-green-500" :
-                                      property.fraudRisk === 1 ? "text-yellow-500" :
-                                      property.fraudRisk === 2 ? "text-orange-500" : "text-red-500"
-                                    : "text-gray-300"
-                                }`}
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-                
-                <CardFooter className="flex justify-between">
-                  <Button variant="ghost">상세보기</Button>
-                  <Button variant="outline">연락하기</Button>
-                </CardFooter>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 mx-auto mb-4 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+        {(mapViewMode !== "fullscreen" || !showMap) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {filteredProperties.length > 0 ? (
+              filteredProperties.map(property => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  isLiked={likedProperties.has(property.id)}
+                  onToggleLike={handleToggleLike}
                 />
-              </svg>
-              <p className="text-lg font-medium mb-2">검색 결과가 없습니다</p>
-              <p className="text-gray-500 mb-6">다른 검색 조건을 선택해 보세요.</p>
-            </div>
-          )}
-        </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-12 w-12 mx-auto mb-4 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                <p className="text-lg font-medium mb-2">검색 결과가 없습니다</p>
+                <p className="text-gray-500 mb-6">다른 검색 조건을 선택해 보세요.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
