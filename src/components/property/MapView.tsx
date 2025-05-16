@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 
+// Add the necessary type reference
+/// <reference types="@types/google.maps" />
+
 interface Property {
   id: string;
   address: string;
@@ -54,10 +57,10 @@ const MapView: React.FC<MapViewProps> = ({
   
   useEffect(() => {
     // Check if Google Maps API is already loaded
-    if (!window.google?.maps) {
+    if (window.google === undefined || window.google.maps === undefined) {
       // If not loaded, create script and append to body
       const googleMapScript = document.createElement('script');
-      googleMapScript.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
+      googleMapScript.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY"}&libraries=places`;
       googleMapScript.async = true;
       googleMapScript.defer = true;
       window.document.body.appendChild(googleMapScript);
@@ -89,7 +92,7 @@ const MapView: React.FC<MapViewProps> = ({
       fullscreenControl: true,
     };
     
-    const newMap = new google.maps.Map(mapRef.current, mapOptions);
+    const newMap = new window.google.maps.Map(mapRef.current, mapOptions);
     setMap(newMap);
     
     // Clean up
@@ -116,11 +119,11 @@ const MapView: React.FC<MapViewProps> = ({
       const lat = center.lat() + (Math.random() - 0.5) * 0.05;
       const lng = center.lng() + (Math.random() - 0.5) * 0.05;
       
-      const marker = new google.maps.Marker({
+      const marker = new window.google.maps.Marker({
         position: { lat, lng },
         map,
         title: property.address,
-        animation: google.maps.Animation.DROP
+        animation: window.google.maps.Animation.DROP
       });
       
       // Create info window for this property
@@ -136,7 +139,7 @@ const MapView: React.FC<MapViewProps> = ({
         </div>
       `;
       
-      const infoWindow = new google.maps.InfoWindow({
+      const infoWindow = new window.google.maps.InfoWindow({
         content: contentString,
       });
       
