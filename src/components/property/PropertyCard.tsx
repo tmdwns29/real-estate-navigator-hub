@@ -10,26 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-interface Property {
-  id: string;
-  title: string;
-  type: string;
-  dealType: string;
-  price?: number;
-  deposit?: number;
-  monthlyRent?: number;
-  address: string;
-  area: number;
-  rooms: number;
-  baths: number;
-  floor: number;
-  totalFloors: number;
-  thumbnail: string;
-  likes: number;
-  predictedPrice?: number | null;
-  fraudRisk?: number | null;
-}
+import { Property } from '@/data/propertyData';
 
 interface PropertyCardProps {
   property: Property;

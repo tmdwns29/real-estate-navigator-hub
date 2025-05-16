@@ -2,19 +2,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
+import { Property } from '@/data/propertyData';
 
 // Add the necessary type reference
 /// <reference types="@types/google.maps" />
-
-interface Property {
-  id: string;
-  address: string;
-  price?: number;
-  deposit?: number;
-  monthlyRent?: number;
-  dealType: string;
-  // Add any other properties you need
-}
 
 interface MapViewProps {
   properties: Property[];
