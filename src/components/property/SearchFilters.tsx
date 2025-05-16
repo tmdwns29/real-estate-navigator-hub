@@ -99,7 +99,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         <Button 
           variant="outline" 
           className="flex items-center gap-2"
-          onClick={() => setShowMap(prev => !prev)}
+          onClick={() => setShowMap(!showMap)}
         >
           <MapPin className="h-4 w-4" />
           {showMap ? "지도 숨기기" : "지도 보기"}
